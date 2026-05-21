@@ -1,3 +1,5 @@
+import asyncio
+from functools import partial
 from pathlib import Path
 
 from fastapi import APIRouter, Request
@@ -47,18 +49,27 @@ def index(request: Request) -> HTMLResponse:
 
 
 @router.post("/ask", response_model=QueryResponse)
-def ask(query: QueryRequest) -> QueryResponse:
-    """Run the RAG pipeline and return an answer.
+async def ask(query: QueryRequest) -> QueryResponse:
+    """Run the RAG pipeline non-blocking and return an answer.
+
+    Runs the pipeline in a thread pool so the event loop is free to handle
+    other requests while waiting for LLM responses.
 
     Args:
         query: Validated request with question, max_contexts, and backend.
-               backend is 'local' (Phi-3) or 'anthropic' (Haiku). Defaults to 'local'.
+               backend is 'local' (Phi-3), 'anthropic' (Haiku), or 'agent'.
 
     Returns:
         QueryResponse with answer, retrieved contexts, config name, and latency.
     """
     pipeline = PIPELINES[query.backend]
-    result = pipeline.answer_question(query.question, max_contexts=query.max_contexts)
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(
+        None,
+        partial(
+            pipeline.answer_question, query.question, max_contexts=query.max_contexts
+        ),
+    )
     return QueryResponse(
         answer=result.answer,
         contexts=result.contexts,
