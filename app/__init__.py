@@ -14,7 +14,7 @@ def create_app() -> FastAPI:
     Returns:
         Configured FastAPI instance with routes and static files mounted.
     """
-    app = FastAPI(title="Women's Soccer RAG", version="0.1.0")
+    app = FastAPI(title="FirstTouch", version="0.1.0")
     app.mount("/static", StaticFiles(directory=_BASE / "static"), name="static")
     app.include_router(router)
     return app
