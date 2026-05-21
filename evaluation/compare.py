@@ -34,7 +34,8 @@ CONFIGS = {
     ),
     "agent-laws": AgentPipeline(tools=["search_laws"]),
     "agent-stats": AgentPipeline(tools=["search_stats"]),
-    "agent-all": AgentPipeline(tools=["search_laws", "search_stats"]),
+    "agent-player": AgentPipeline(tools=["search_player"]),
+    "agent-all": AgentPipeline(tools=["search_laws", "search_stats", "search_player"]),
 }
 
 

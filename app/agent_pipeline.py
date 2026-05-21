@@ -9,6 +9,7 @@ from langsmith import traceable
 from .backends.pipeline.base import BasePipeline
 from .models import PipelineResult
 from .rag_pipeline import RAGPipeline
+from .tools.player_tool import search_player
 from .tools.stats_tool import search_stats
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
@@ -18,11 +19,12 @@ DEFAULT_MODEL = "claude-haiku-4-5-20251001"
 SYSTEM_PROMPT = (
     "You are a helpful assistant that answers questions about women's football. "
     "Use search_laws for questions about rules and regulations. "
-    "Use search_stats for questions about match results, scores, standings, and player stats. "
+    "Use search_stats for questions about match results, scores, and team performance. "
+    "Use search_player for questions about a specific player's appearances or career. "
     "Answer in 3 sentences or less. Do not ask follow-up questions."
 )
 
-ALL_TOOL_NAMES = ["search_laws", "search_stats"]
+ALL_TOOL_NAMES = ["search_laws", "search_stats", "search_player"]
 
 TOOLS: list[dict] = [
     {
@@ -67,6 +69,33 @@ TOOLS: list[dict] = [
                 },
             },
             "required": ["query"],
+        },
+    },
+    {
+        "name": "search_player",
+        "description": (
+            "Search a specific player's appearances in women's football from StatsBomb open data. "
+            "Use this for questions about a named player — matches played, team, competition."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "player_name": {
+                    "type": "string",
+                    "description": "Player name to search for, e.g. 'Sam Kerr', 'Keira Walsh'",
+                },
+                "competition": {
+                    "type": "string",
+                    "description": "Optional competition name to narrow the search.",
+                    "enum": [
+                        "FIFA Women's World Cup",
+                        "FA Women's Super League",
+                        "NWSL",
+                        "UEFA Women's Euro",
+                    ],
+                },
+            },
+            "required": ["player_name"],
         },
     },
 ]
@@ -120,6 +149,9 @@ class AgentPipeline(BasePipeline):
             "search_laws": _search_laws,
             "search_stats": lambda args: search_stats(
                 args["query"], args.get("competition")
+            ),
+            "search_player": lambda args: search_player(
+                args["player_name"], args.get("competition")
             ),
         }
 

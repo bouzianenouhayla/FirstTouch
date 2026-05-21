@@ -182,5 +182,37 @@
     "tags": ["stats", "wwc", "2023", "usa"],
     "expected_tool": "search_stats",
     "context_ids": null
+  },
+  {
+    "id": "keira-walsh-wwc-2023-final",
+    "question": "Did Keira Walsh play in the 2023 Women's World Cup final?",
+    "reference_answer": "Yes, Keira Walsh played in the 2023 Women's World Cup final for England against Spain.",
+    "tags": ["player", "wwc", "2023"],
+    "expected_tool": "search_player",
+    "context_ids": null
+  },
+  {
+    "id": "sam-kerr-wwc-2023-appearances",
+    "question": "How many matches did Sam Kerr play in the 2023 Women's World Cup?",
+    "reference_answer": "Sam Kerr played in 4 matches for Australia in the 2023 Women's World Cup.",
+    "tags": ["player", "wwc", "2023"],
+    "expected_tool": "search_player",
+    "context_ids": null
+  },
+  {
+    "id": "spain-gk-wwc-2023-final",
+    "question": "Who was Spain's goalkeeper in the 2023 Women's World Cup final?",
+    "reference_answer": "Spain's goalkeeper in the 2023 Women's World Cup final was Catalina Thomas Coll Lluch.",
+    "tags": ["player", "wwc", "2023", "final"],
+    "expected_tool": "search_player",
+    "context_ids": null
+  },
+  {
+    "id": "england-wwc-2023-matches",
+    "question": "How many matches did England play in the 2023 Women's World Cup?",
+    "reference_answer": "England played 7 matches in the 2023 Women's World Cup, reaching the final where they lost to Spain.",
+    "tags": ["player", "wwc", "2023"],
+    "expected_tool": "search_player",
+    "context_ids": null
   }
 ]
