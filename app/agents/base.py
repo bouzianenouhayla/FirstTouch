@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 from abc import ABC, abstractmethod
@@ -5,10 +6,18 @@ from pathlib import Path
 
 import anthropic
 from dotenv import load_dotenv
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 DEFAULT_MODEL = "claude-haiku-4-5-20251001"
+_FALLBACK_ANSWER = "I'm temporarily unavailable. Please try again in a moment."
+logger = logging.getLogger(__name__)
 
 
 class BaseAgent(ABC):
@@ -81,9 +90,40 @@ class BaseAgent(ABC):
         if self._tools:
             create_kwargs["tools"] = self._tools
 
+        @retry(
+            retry=retry_if_exception_type(
+                (
+                    anthropic.RateLimitError,
+                    anthropic.APIConnectionError,
+                    anthropic.InternalServerError,
+                )
+            ),
+            wait=wait_exponential(multiplier=1, min=2, max=30),
+            stop=stop_after_attempt(3),
+            reraise=False,
+            before_sleep=lambda state: logger.warning(
+                "Anthropic API error — retrying (attempt %d)", state.attempt_number
+            ),
+        )
+        def _call_api() -> anthropic.types.Message | None:
+            try:
+                return self._client.messages.create(**create_kwargs)
+            except (
+                anthropic.RateLimitError,
+                anthropic.APIConnectionError,
+                anthropic.InternalServerError,
+            ):
+                raise
+            except Exception as exc:
+                logger.error("Unrecoverable API error: %s", exc)
+                return None
+
         while True:
             create_kwargs["messages"] = messages
-            response = self._client.messages.create(**create_kwargs)
+            response = _call_api()
+            if response is None:
+                answer = _FALLBACK_ANSWER
+                break
 
             if response.stop_reason == "end_turn":
                 for block in response.content:
