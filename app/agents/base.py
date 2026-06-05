@@ -2,6 +2,7 @@ import logging
 import os
 import time
 from abc import ABC, abstractmethod
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import anthropic
@@ -133,20 +134,26 @@ class BaseAgent(ABC):
                 break
 
             if response.stop_reason == "tool_use":
-                tool_results = []
+                tool_blocks = [b for b in response.content if b.type == "tool_use"]
+                for block in tool_blocks:
+                    tools_called.append(block.name)
+
                 t0 = time.perf_counter()
-                for block in response.content:
-                    if block.type == "tool_use":
-                        tools_called.append(block.name)
-                        result = tool_fns[block.name](block.input)
-                        tool_results.append(
-                            {
-                                "type": "tool_result",
-                                "tool_use_id": block.id,
-                                "content": result,
-                            }
-                        )
+                with ThreadPoolExecutor(max_workers=len(tool_blocks)) as executor:
+                    futures = {
+                        block.id: executor.submit(tool_fns[block.name], block.input)
+                        for block in tool_blocks
+                    }
                 retrieval_ms += (time.perf_counter() - t0) * 1000
+
+                tool_results = [
+                    {
+                        "type": "tool_result",
+                        "tool_use_id": block_id,
+                        "content": future.result(),
+                    }
+                    for block_id, future in futures.items()
+                ]
                 messages.append({"role": "assistant", "content": response.content})
                 messages.append({"role": "user", "content": tool_results})
             else:
