@@ -2,6 +2,7 @@ import logging
 import os
 import time
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -49,7 +50,7 @@ class BaseAgent(ABC):
             }
 
     @abstractmethod
-    def _get_tool_functions(self) -> dict[str, callable]:
+    def _get_tool_functions(self) -> dict[str, Callable]:
         """Return a mapping of tool name to the callable that executes it.
 
         Returns:
@@ -57,7 +58,10 @@ class BaseAgent(ABC):
         """
 
     def run(
-        self, question: str, history: list[dict] | None = None
+        self,
+        question: str,
+        history: list[dict] | None = None,
+        user_context: str | None = None,
     ) -> tuple[str, list[str], float, float]:
         """Execute the tool-use loop for this agent.
 
@@ -65,6 +69,8 @@ class BaseAgent(ABC):
             question: Natural language question or task for this agent.
             history: Prior conversation turns in Anthropic message format.
                      Prepended to messages so the agent has context from previous turns.
+            user_context: Relevant facts about the user retrieved from semantic memory.
+                          Appended as a second system block so the cached prefix is preserved.
 
         Returns:
             Tuple of (answer, tools_called, retrieval_ms, total_ms).
@@ -76,16 +82,25 @@ class BaseAgent(ABC):
         t_start = time.perf_counter()
         tool_fns = self._get_tool_functions()
 
+        system: list[dict] = [
+            {
+                "type": "text",
+                "text": self._system_prompt,
+                "cache_control": {"type": "ephemeral"},
+            }
+        ]
+        if user_context:
+            system.append(
+                {
+                    "type": "text",
+                    "text": f"Known facts about this user:\n{user_context}",
+                }
+            )
+
         create_kwargs: dict = {
             "model": self.model,
             "max_tokens": 1024,
-            "system": [
-                {
-                    "type": "text",
-                    "text": self._system_prompt,
-                    "cache_control": {"type": "ephemeral"},
-                }
-            ],
+            "system": system,
             "messages": messages,
         }
         if self._tools:
@@ -128,7 +143,7 @@ class BaseAgent(ABC):
 
             if response.stop_reason == "end_turn":
                 for block in response.content:
-                    if hasattr(block, "text"):
+                    if isinstance(block, anthropic.types.TextBlock):
                         answer = block.text.strip()
                         break
                 break

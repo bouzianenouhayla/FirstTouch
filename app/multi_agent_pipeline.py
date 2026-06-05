@@ -6,6 +6,8 @@ from langsmith import traceable
 
 from app.agents.coordinator import CoordinatorAgent
 from app.backends.pipeline.base import BasePipeline
+from app.memory.extractor import MemoryExtractor
+from app.memory.store import MemoryStore
 from app.models import PipelineResult
 from app.rag_pipeline import RAGPipeline
 
@@ -53,16 +55,21 @@ class MultiAgentPipeline(BasePipeline):
         rag: RAGPipeline passed through to the RulesAgent for law retrieval.
         """
         self._coordinator = CoordinatorAgent(rag=rag)
+        self._memory = MemoryStore()
+        self._extractor = MemoryExtractor()
         self.config_name = "multi-agent"
 
     @traceable(name="multi_agent_answer", metadata={"pipeline": "MultiAgentPipeline"})
     def answer_question(self, question: str, **kwargs) -> PipelineResult:
         """Route the question through the coordinator and return a structured result.
 
+        Retrieves relevant user facts from semantic memory before answering,
+        then extracts and stores any new facts from the exchange.
+
         Args:
             question: Natural language question from the user.
-            **kwargs: Accepts session_id (str) for conversation history. A new
-                      session is created if not provided.
+            **kwargs: Accepts session_id (str) for conversation history and memory.
+                      A new session is created if not provided.
 
         Returns:
             PipelineResult with answer and timing. contexts is empty (agents handle retrieval).
@@ -70,11 +77,18 @@ class MultiAgentPipeline(BasePipeline):
         session_id = kwargs.get("session_id") or str(uuid4())
         history = _load_history(session_id)
 
+        facts = self._memory.retrieve(question)
+        user_context = "\n".join(f"- {f}" for f in facts) if facts else None
+
         answer, specialists_called, retrieval_ms, total_ms = self._coordinator.run(
-            question, history=history
+            question, history=history, user_context=user_context
         )
 
         _save_turn(session_id, question, answer)
+
+        new_facts = self._extractor.extract(question, answer)
+        for fact in new_facts:
+            self._memory.store(fact, session_id)
 
         llm_ms = total_ms - retrieval_ms
         return PipelineResult(

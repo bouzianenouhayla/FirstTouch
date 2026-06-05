@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 from langsmith import traceable
 
 from app.agents.base import BaseAgent
@@ -94,7 +96,7 @@ class CoordinatorAgent(BaseAgent):
         self._player = PlayerAgent()
         self._training = TrainingAgent()
 
-    def _get_tool_functions(self) -> dict[str, callable]:
+    def _get_tool_functions(self) -> dict[str, Callable]:
         """Returns:
         Tool function mapping — each tool invokes the corresponding specialist agent.
         """
@@ -107,15 +109,19 @@ class CoordinatorAgent(BaseAgent):
 
     @traceable(name="coordinator.run", metadata={"agent": "CoordinatorAgent"})
     def run(
-        self, question: str, history: list[dict] | None = None
+        self,
+        question: str,
+        history: list[dict] | None = None,
+        user_context: str | None = None,
     ) -> tuple[str, list[str], float, float]:
         """Route the question to the right specialist and return the answer.
 
         Args:
             question: User's natural language question.
             history: Prior conversation turns to give the coordinator context.
+            user_context: Relevant user facts from semantic memory to personalise routing.
 
         Returns:
             Tuple of (answer, specialists_called, retrieval_ms, total_ms).
         """
-        return super().run(question, history=history)
+        return super().run(question, history=history, user_context=user_context)

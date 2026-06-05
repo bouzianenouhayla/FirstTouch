@@ -67,7 +67,9 @@ class RAGPipeline(BasePipeline):
         return [c for c in all_contexts if c.score >= self.min_score]
 
     @traceable(name="answer_question", metadata={"pipeline": "RAGPipeline"})
-    def answer_question(self, question: str, max_contexts: int = 5) -> PipelineResult:
+    def answer_question(
+        self, question: str, max_contexts: int = 5, **_kwargs
+    ) -> PipelineResult:
         """Run the full pipeline and return a timed, structured result.
 
         Args:
