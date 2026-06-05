@@ -1,4 +1,5 @@
 from typing import List
+from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
@@ -6,7 +7,8 @@ from pydantic import BaseModel, Field
 class QueryRequest(BaseModel):
     question: str = Field(..., min_length=3)
     max_contexts: int = Field(5, ge=1, le=20)
-    backend: str = Field("local", pattern="^(local|anthropic|agent)$")
+    backend: str = Field("local", pattern="^(local|anthropic|agent|multi-agent)$")
+    session_id: str = Field(default_factory=lambda: str(uuid4()))
 
 
 class RetrievedContext(BaseModel):

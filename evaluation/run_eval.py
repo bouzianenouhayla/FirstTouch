@@ -65,6 +65,15 @@ def load_dataset() -> list[EvalSample]:
     return [EvalSample.model_validate(item) for item in raw_samples]
 
 
+# Maps coordinator delegation tool names to their canonical expected_tool equivalents
+# so multi-agent tool selection can be compared against the same eval labels.
+_TOOL_ALIASES: dict[str, str] = {
+    "ask_rules_agent": "search_laws",
+    "ask_stats_agent": "search_stats",
+    "ask_player_agent": "search_player",
+}
+
+
 def compute_tool_selection(
     expected_tool: str | None, tools_called: list[str]
 ) -> bool | None:
@@ -72,14 +81,16 @@ def compute_tool_selection(
 
     Args:
         expected_tool: Tool name from the eval sample, or None if unlabelled.
-        tools_called: Tools the pipeline actually called.
+        tools_called: Tools the pipeline actually called. Coordinator delegation
+                      tool names are resolved via _TOOL_ALIASES before matching.
 
     Returns:
         True/False if labelled, None otherwise.
     """
     if not expected_tool:
         return None
-    return expected_tool in tools_called
+    resolved = {_TOOL_ALIASES.get(t, t) for t in tools_called}
+    return expected_tool in resolved
 
 
 def run(pipeline: BasePipeline | None = None) -> EvalRunSummary:

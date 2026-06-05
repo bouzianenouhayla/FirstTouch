@@ -9,8 +9,13 @@
 <body>
     <main class="shell">
         <section class="hero">
-            <h1>FirstTouch</h1>
-            <p>Your football coach in your pocket. Ask about rules, players, matches — built for women who play.</p>
+            <div class="hero-row">
+                <div>
+                    <h1>FirstTouch</h1>
+                    <p>Your football coach in your pocket. Ask about rules, players, matches — built for women who play.</p>
+                </div>
+                <button id="new-chat-btn" class="new-chat-btn" title="Start a new conversation">New chat</button>
+            </div>
         </section>
         <section class="chat-panel">
             <div id="messages" class="messages"></div>
@@ -19,6 +24,7 @@
                     <option value="local">Local (Phi-3)</option>
                     <option value="anthropic">Anthropic (Haiku)</option>
                     <option value="agent">Agent (laws + live stats)</option>
+                    <option value="multi-agent">Multi-Agent (coordinator + specialists)</option>
                 </select>
                 <input id="question" name="question" placeholder="Ask something..." required minlength="3" />
                 <button type="submit">Ask</button>
@@ -30,6 +36,28 @@
         const input = document.getElementById('question');
         const backendSelect = document.getElementById('backend');
         const messages = document.getElementById('messages');
+        const newChatBtn = document.getElementById('new-chat-btn');
+
+        function generateSessionId() {
+            return crypto.randomUUID();
+        }
+
+        function getSessionId() {
+            let id = localStorage.getItem('firsttouch_session_id');
+            if (!id) {
+                id = generateSessionId();
+                localStorage.setItem('firsttouch_session_id', id);
+            }
+            return id;
+        }
+
+        function resetSession() {
+            localStorage.removeItem('firsttouch_session_id');
+            messages.innerHTML = '';
+            getSessionId();
+        }
+
+        newChatBtn.addEventListener('click', resetSession);
 
         function appendMessage(role, text, meta) {
             const bubble = document.createElement('div');
@@ -39,7 +67,6 @@
             textNode.textContent = text;
             bubble.appendChild(textNode);
 
-            // Show config name and response time under assistant answers
             if (meta) {
                 const metaNode = document.createElement('span');
                 metaNode.className = 'meta';
@@ -55,6 +82,7 @@
             event.preventDefault();
             const question = input.value.trim();
             const backend = backendSelect.value;
+            const session_id = getSessionId();
             if (!question) return;
 
             appendMessage('user', question);
@@ -65,7 +93,7 @@
                 const response = await fetch('/ask', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question, backend })
+                    body: JSON.stringify({ question, backend, session_id })
                 });
                 const data = await response.json();
                 messages.lastChild.remove();
@@ -78,6 +106,9 @@
                 appendMessage('assistant error', 'Something went wrong. Check the server logs.');
             }
         });
+
+        // Initialise session on load
+        getSessionId();
     </script>
 </body>
 </html>

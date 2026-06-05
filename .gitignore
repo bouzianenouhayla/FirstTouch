@@ -30,3 +30,4 @@ test_request.py
 
 # Generated data files
 data/rag_output.csv
+chat_history.db

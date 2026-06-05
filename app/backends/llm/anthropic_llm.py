@@ -51,7 +51,13 @@ class AnthropicLLM(BaseLLM):
         message = self._client.messages.create(
             model=self.model,
             max_tokens=512,
-            system=prompt["system"],
+            system=[
+                {
+                    "type": "text",
+                    "text": prompt["system"],
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
             messages=[{"role": "user", "content": prompt["user"]}],
         )
         return message.content[0].text.strip()

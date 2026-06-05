@@ -10,6 +10,7 @@ from .agent_pipeline import AgentPipeline
 from .backends.llm.anthropic_llm import AnthropicLLM
 from .backends.pipeline.base import BasePipeline
 from .models import QueryRequest, QueryResponse
+from .multi_agent_pipeline import MultiAgentPipeline
 from .rag_pipeline import RAGPipeline
 
 router = APIRouter()
@@ -22,6 +23,7 @@ PIPELINES: dict[str, BasePipeline] = {
     "local": _local_rag,
     "anthropic": RAGPipeline(llm=AnthropicLLM(), config_name="anthropic-haiku-chroma"),
     "agent": AgentPipeline(rag=_local_rag),
+    "multi-agent": MultiAgentPipeline(rag=_local_rag),
 }
 
 
@@ -67,7 +69,10 @@ async def ask(query: QueryRequest) -> QueryResponse:
     result = await loop.run_in_executor(
         None,
         partial(
-            pipeline.answer_question, query.question, max_contexts=query.max_contexts
+            pipeline.answer_question,
+            query.question,
+            max_contexts=query.max_contexts,
+            session_id=query.session_id,
         ),
     )
     return QueryResponse(

@@ -120,6 +120,11 @@ class AgentPipeline(BasePipeline):
         self.model = model
         enabled = tools if tools is not None else ALL_TOOL_NAMES
         self._tools = [t for t in TOOLS if t["name"] in enabled]
+        if self._tools:
+            self._tools[-1] = {
+                **self._tools[-1],
+                "cache_control": {"type": "ephemeral"},
+            }
         self.config_name = f"agent-{'_'.join(enabled)}-{model}"
         self._client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
@@ -159,7 +164,13 @@ class AgentPipeline(BasePipeline):
             response = self._client.messages.create(
                 model=self.model,
                 max_tokens=1024,
-                system=SYSTEM_PROMPT,
+                system=[
+                    {
+                        "type": "text",
+                        "text": SYSTEM_PROMPT,
+                        "cache_control": {"type": "ephemeral"},
+                    }
+                ],
                 tools=self._tools,
                 messages=messages,
             )

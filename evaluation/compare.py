@@ -3,6 +3,7 @@ import logging
 
 from app.agent_pipeline import AgentPipeline
 from app.backends.llm.anthropic_llm import AnthropicLLM
+from app.multi_agent_pipeline import MultiAgentPipeline
 from app.rag_pipeline import RAGPipeline
 from evaluation.run_eval import run
 
@@ -36,6 +37,7 @@ CONFIGS = {
     "agent-stats": AgentPipeline(tools=["search_stats"]),
     "agent-player": AgentPipeline(tools=["search_player"]),
     "agent-all": AgentPipeline(tools=["search_laws", "search_stats", "search_player"]),
+    "multi-agent": MultiAgentPipeline(),
 }
 
 

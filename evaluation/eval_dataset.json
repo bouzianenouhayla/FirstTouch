@@ -3,47 +3,95 @@
     "id": "offside-rule",
     "question": "Describe the offside offense according to the current IFAB Laws of the Game.",
     "reference_answer": "A player is in an offside position if any part of the head, body or feet is in the opponents' half and nearer to the opponents' goal line than both the ball and the second-last opponent. Being in an offside position is only an offence if the player becomes involved in active play by interfering with play, an opponent, or gaining an advantage.",
-    "tags": ["laws", "offside"],
+    "tags": [
+      "laws",
+      "offside"
+    ],
     "expected_tool": "search_laws",
-    "context_ids": ["chunk-fad287643e4c0795", "chunk-ae3a61a5f5a6626b", "chunk-5a62886d8d1e7b3d", "chunk-2a8edef265a48fdf", "chunk-c28f2c527861b8ab"]
+    "context_ids": [
+      "chunk-fad287643e4c0795",
+      "chunk-ae3a61a5f5a6626b",
+      "chunk-5a62886d8d1e7b3d",
+      "chunk-2a8edef265a48fdf",
+      "chunk-c28f2c527861b8ab"
+    ]
   },
   {
     "id": "direct-free-kick",
     "question": "What are the conditions for a direct free kick to be awarded?",
-    "reference_answer": "A direct free kick is awarded when a player commits an offence against an opponent in a manner considered careless, reckless or using excessive force — including kicking, tripping, jumping at, charging, striking, pushing, or making contact with the ball using the hand or arm (except the goalkeeper in their own penalty area).",
-    "tags": ["laws", "free-kicks", "fouls"],
+    "reference_answer": "A direct free kick is awarded when a player commits an offence against an opponent in a manner considered careless, reckless or using excessive force \u2014 including kicking, tripping, jumping at, charging, striking, pushing, or making contact with the ball using the hand or arm (except the goalkeeper in their own penalty area).",
+    "tags": [
+      "laws",
+      "free-kicks",
+      "fouls"
+    ],
     "expected_tool": "search_laws",
-    "context_ids": ["chunk-b3f47d5cde3b4c41", "chunk-c64f288b94611d2d", "chunk-5f772caa347493a8", "chunk-ab554f97e8bdc5a0", "chunk-dcc4ab44756b6d1a"]
+    "context_ids": [
+      "chunk-b3f47d5cde3b4c41",
+      "chunk-c64f288b94611d2d",
+      "chunk-5f772caa347493a8",
+      "chunk-ab554f97e8bdc5a0",
+      "chunk-dcc4ab44756b6d1a"
+    ]
   },
   {
     "id": "corner-kick",
     "question": "When is a corner kick awarded and can a goal be scored directly from it?",
     "reference_answer": "A corner kick is awarded when the whole ball passes over the goal line, on the ground or in the air, having last touched a player of the defending team, and a goal is not scored. A goal may be scored directly from a corner kick, but only against the opposing team.",
-    "tags": ["laws", "corner-kick", "restarts"],
+    "tags": [
+      "laws",
+      "corner-kick",
+      "restarts"
+    ],
     "expected_tool": "search_laws",
-    "context_ids": ["chunk-d50b113f251ede9c", "chunk-c48b7b8b3e648c78", "chunk-d167f9fbcb83e690", "chunk-cfc99d6d7c79f732", "chunk-e3ee9cfdbfb67632"]
+    "context_ids": [
+      "chunk-d50b113f251ede9c",
+      "chunk-c48b7b8b3e648c78",
+      "chunk-d167f9fbcb83e690",
+      "chunk-cfc99d6d7c79f732",
+      "chunk-e3ee9cfdbfb67632"
+    ]
   },
   {
     "id": "var-reviewable-situations",
     "question": "What are the four categories of situations that VAR can review?",
     "reference_answer": "VAR can only review four categories: goals and offences in the build-up, penalty kick decisions, direct red card incidents (not second yellow cards), and mistaken identity when the referee cautions or dismisses the wrong player.",
-    "tags": ["laws", "VAR", "technology"],
+    "tags": [
+      "laws",
+      "VAR",
+      "technology"
+    ],
     "expected_tool": "search_laws",
-    "context_ids": ["chunk-005c591c57bf1e3d", "chunk-01378ffaacf8d70b", "chunk-4203ec775544d50c", "chunk-7a79710e1be6f127", "chunk-c55e40f70e929ff6"]
+    "context_ids": [
+      "chunk-005c591c57bf1e3d",
+      "chunk-01378ffaacf8d70b",
+      "chunk-4203ec775544d50c",
+      "chunk-7a79710e1be6f127",
+      "chunk-c55e40f70e929ff6"
+    ]
   },
   {
     "id": "number-of-players",
     "question": "What is the minimum number of players a team must have for a match to start or continue?",
     "reference_answer": "A match is played by two teams each with a maximum of eleven players, one of whom must be the goalkeeper. A match may not start or continue if either team has fewer than seven players.",
-    "tags": ["laws", "players"],
+    "tags": [
+      "laws",
+      "players"
+    ],
     "expected_tool": "search_laws",
-    "context_ids": ["chunk-2593abf0-e959-4f3d-a2c7-e3cd4a60350e", "chunk-d9702eb4-fd3d-4b9f-bb00-5d3072f2890b"]
+    "context_ids": [
+      "chunk-2593abf0-e959-4f3d-a2c7-e3cd4a60350e",
+      "chunk-d9702eb4-fd3d-4b9f-bb00-5d3072f2890b"
+    ]
   },
   {
     "id": "ball-out-of-play",
     "question": "Under what conditions is the ball considered out of play according to IFAB Laws?",
     "reference_answer": "The ball is out of play when it has wholly passed over the goal line or touchline on the ground or in the air, when play has been stopped by the referee, or when it touches a match official and remains on the field while a team starts a promising attack or goes directly into the goal.",
-    "tags": ["laws", "ball-in-play"],
+    "tags": [
+      "laws",
+      "ball-in-play"
+    ],
     "expected_tool": "search_laws",
     "context_ids": null
   },
@@ -51,7 +99,11 @@
     "id": "goal-kick",
     "question": "When is a goal kick awarded and from where is it taken?",
     "reference_answer": "A goal kick is awarded when the whole ball passes over the goal line having last touched a player of the attacking team and a goal is not scored. The kick is taken from anywhere within the goal area by any player of the defending team.",
-    "tags": ["laws", "goal-kick", "restarts"],
+    "tags": [
+      "laws",
+      "goal-kick",
+      "restarts"
+    ],
     "expected_tool": "search_laws",
     "context_ids": null
   },
@@ -59,71 +111,117 @@
     "id": "match-duration",
     "question": "How long does a football match last according to the Laws of the Game?",
     "reference_answer": "A match lasts for two equal halves of 45 minutes each, which may only be reduced if agreed between the referee and the two teams before the match starts.",
-    "tags": ["laws", "duration"],
+    "tags": [
+      "laws",
+      "duration"
+    ],
     "expected_tool": "search_laws",
-    "context_ids": ["chunk-2ca072fa-d2c7-4213-ba0f-b85ea5623fd9"]
+    "context_ids": [
+      "chunk-2ca072fa-d2c7-4213-ba0f-b85ea5623fd9"
+    ]
   },
   {
     "id": "dangerous-play",
     "question": "What is considered playing in a dangerous manner?",
     "reference_answer": "Playing in a dangerous manner is any action that, while trying to play the ball, threatens injury to someone including the player themselves, and includes preventing a nearby opponent from playing the ball for fear of injury. A scissors or bicycle kick is permissible provided it is not dangerous.",
-    "tags": ["laws", "fouls"],
+    "tags": [
+      "laws",
+      "fouls"
+    ],
     "expected_tool": "search_laws",
-    "context_ids": ["chunk-72b524ace19ceb0a"]
+    "context_ids": [
+      "chunk-72b524ace19ceb0a"
+    ]
   },
   {
     "id": "team-captain",
     "question": "What are the responsibilities and requirements of the team captain?",
     "reference_answer": "Each team must have a captain on the field of play who wears an identifying armband. The team captain has no special status or privileges but has a degree of responsibility for the behaviour of the team.",
-    "tags": ["laws", "captain"],
+    "tags": [
+      "laws",
+      "captain"
+    ],
     "expected_tool": "search_laws",
-    "context_ids": ["chunk-f1cc1c920a21b665"]
+    "context_ids": [
+      "chunk-f1cc1c920a21b665"
+    ]
   },
   {
     "id": "concussion-substitution",
     "question": "Does a concussion substitution count as one of the normal substitutions?",
     "reference_answer": "No. When a player with actual or suspected concussion is substituted, this does not count as one of the normal permitted substitutions. Each team is permitted to use a maximum of one concussion substitute in a match.",
-    "tags": ["laws", "substitution", "concussion"],
+    "tags": [
+      "laws",
+      "substitution",
+      "concussion"
+    ],
     "expected_tool": "search_laws",
-    "context_ids": ["chunk-10b7ead348dc855d", "chunk-25ad2b35241d2c8d"]
+    "context_ids": [
+      "chunk-10b7ead348dc855d",
+      "chunk-25ad2b35241d2c8d"
+    ]
   },
   {
     "id": "var-decision",
     "question": "Who makes the final decision after a VAR review?",
     "reference_answer": "Only the referee can initiate a review. The VAR and other match officials can only recommend a review to the referee. The final decision is always taken by the referee, and the original decision will not be changed unless the video review clearly shows it was a clear and obvious error.",
-    "tags": ["laws", "var"],
+    "tags": [
+      "laws",
+      "var"
+    ],
     "expected_tool": "search_laws",
-    "context_ids": ["chunk-51c8c547033d15bf"]
+    "context_ids": [
+      "chunk-51c8c547033d15bf"
+    ]
   },
   {
     "id": "penalty-shootout",
     "question": "What methods can be used to determine the winning team after a draw?",
     "reference_answer": "The methods to determine a winning team after a draw include the away goals rule, two equal periods of extra time not exceeding 15 minutes each, and penalties (penalty shoot-out). A combination of these procedures may be used.",
-    "tags": ["laws", "penalty-shootout"],
+    "tags": [
+      "laws",
+      "penalty-shootout"
+    ],
     "expected_tool": "search_laws",
-    "context_ids": ["chunk-a3f5ec9ed36876e2"]
+    "context_ids": [
+      "chunk-a3f5ec9ed36876e2"
+    ]
   },
   {
     "id": "dropped-ball-goal",
     "question": "What happens if a dropped ball enters the goal without touching two players?",
     "reference_answer": "If a dropped ball enters the goal without touching at least two players, play is restarted with a goal kick if it enters the opponents' goal, or a corner kick if it enters the team's own goal.",
-    "tags": ["laws", "dropped-ball"],
+    "tags": [
+      "laws",
+      "dropped-ball"
+    ],
     "expected_tool": "search_laws",
-    "context_ids": ["chunk-9635c6bb67475a30"]
+    "context_ids": [
+      "chunk-9635c6bb67475a30"
+    ]
   },
   {
     "id": "sin-bin-extra-time",
     "question": "What happens to a sin bin period that is not completed at the end of normal time when extra time is played?",
     "reference_answer": "If a temporary dismissal period has not been completed at the end of the second half when extra time is to be played, the remaining period is served from the start of extra time.",
-    "tags": ["laws", "sin-bin"],
+    "tags": [
+      "laws",
+      "sin-bin"
+    ],
     "expected_tool": "search_laws",
-    "context_ids": ["chunk-7287b63eda719ec9"]
+    "context_ids": [
+      "chunk-7287b63eda719ec9"
+    ]
   },
   {
     "id": "wwc-2023-winner",
     "question": "Which team won the 2023 FIFA Women's World Cup?",
     "reference_answer": "Spain won the 2023 FIFA Women's World Cup, defeating England 1-0 in the final.",
-    "tags": ["stats", "wwc", "2023"],
+    "tags": [
+      "stats",
+      "wwc",
+      "2023"
+    ],
     "expected_tool": "search_stats",
     "context_ids": null
   },
@@ -131,7 +229,12 @@
     "id": "wwc-2023-final-score",
     "question": "What was the score in the 2023 Women's World Cup final between Spain and England?",
     "reference_answer": "Spain defeated England 1-0 in the 2023 FIFA Women's World Cup final.",
-    "tags": ["stats", "wwc", "2023", "final"],
+    "tags": [
+      "stats",
+      "wwc",
+      "2023",
+      "final"
+    ],
     "expected_tool": "search_stats",
     "context_ids": null
   },
@@ -139,7 +242,11 @@
     "id": "womens-euro-2022-winner",
     "question": "Which team won UEFA Women's Euro 2022?",
     "reference_answer": "England won UEFA Women's Euro 2022, defeating Germany 2-1 after extra time in the final at Wembley.",
-    "tags": ["stats", "euros", "2022"],
+    "tags": [
+      "stats",
+      "euros",
+      "2022"
+    ],
     "expected_tool": "search_stats",
     "context_ids": null
   },
@@ -147,7 +254,12 @@
     "id": "womens-euro-2022-final",
     "question": "What was the result of the UEFA Women's Euro 2022 final?",
     "reference_answer": "England beat Germany 2-1 after extra time in the UEFA Women's Euro 2022 final.",
-    "tags": ["stats", "euros", "2022", "final"],
+    "tags": [
+      "stats",
+      "euros",
+      "2022",
+      "final"
+    ],
     "expected_tool": "search_stats",
     "context_ids": null
   },
@@ -155,7 +267,10 @@
     "id": "statsbomb-competitions",
     "question": "Which women's football competitions are available in StatsBomb open data?",
     "reference_answer": "StatsBomb women's open data includes the FIFA Women's World Cup, FA Women's Super League, NWSL, and UEFA Women's Euro.",
-    "tags": ["stats", "competitions"],
+    "tags": [
+      "stats",
+      "competitions"
+    ],
     "expected_tool": "search_stats",
     "context_ids": null
   },
@@ -163,7 +278,10 @@
     "id": "wsl-seasons-available",
     "question": "How many seasons of the FA Women's Super League are available in StatsBomb open data?",
     "reference_answer": "Three seasons of the FA Women's Super League are available in StatsBomb open data: 2018/2019, 2019/2020, and 2020/2021.",
-    "tags": ["stats", "wsl"],
+    "tags": [
+      "stats",
+      "wsl"
+    ],
     "expected_tool": "search_stats",
     "context_ids": null
   },
@@ -171,7 +289,11 @@
     "id": "wwc-2023-host",
     "question": "Which countries hosted the 2023 FIFA Women's World Cup?",
     "reference_answer": "The 2023 FIFA Women's World Cup was co-hosted by Australia and New Zealand.",
-    "tags": ["stats", "wwc", "2023"],
+    "tags": [
+      "stats",
+      "wwc",
+      "2023"
+    ],
     "expected_tool": "search_stats",
     "context_ids": null
   },
@@ -179,7 +301,12 @@
     "id": "usa-wwc-2023",
     "question": "Did the USA reach the knockout stage of the 2023 Women's World Cup?",
     "reference_answer": "Yes, the USA qualified from the group stage but were eliminated in the round of 16 by Sweden on penalties.",
-    "tags": ["stats", "wwc", "2023", "usa"],
+    "tags": [
+      "stats",
+      "wwc",
+      "2023",
+      "usa"
+    ],
     "expected_tool": "search_stats",
     "context_ids": null
   },
@@ -187,7 +314,11 @@
     "id": "keira-walsh-wwc-2023-final",
     "question": "Did Keira Walsh play in the 2023 Women's World Cup final?",
     "reference_answer": "Yes, Keira Walsh played in the 2023 Women's World Cup final for England against Spain.",
-    "tags": ["player", "wwc", "2023"],
+    "tags": [
+      "player",
+      "wwc",
+      "2023"
+    ],
     "expected_tool": "search_player",
     "context_ids": null
   },
@@ -195,7 +326,11 @@
     "id": "sam-kerr-wwc-2023-appearances",
     "question": "How many matches did Sam Kerr play in the 2023 Women's World Cup?",
     "reference_answer": "Sam Kerr played in 4 matches for Australia in the 2023 Women's World Cup.",
-    "tags": ["player", "wwc", "2023"],
+    "tags": [
+      "player",
+      "wwc",
+      "2023"
+    ],
     "expected_tool": "search_player",
     "context_ids": null
   },
@@ -203,7 +338,12 @@
     "id": "spain-gk-wwc-2023-final",
     "question": "Who was Spain's goalkeeper in the 2023 Women's World Cup final?",
     "reference_answer": "Spain's goalkeeper in the 2023 Women's World Cup final was Catalina Thomas Coll Lluch.",
-    "tags": ["player", "wwc", "2023", "final"],
+    "tags": [
+      "player",
+      "wwc",
+      "2023",
+      "final"
+    ],
     "expected_tool": "search_player",
     "context_ids": null
   },
@@ -211,8 +351,48 @@
     "id": "england-wwc-2023-matches",
     "question": "How many matches did England play in the 2023 Women's World Cup?",
     "reference_answer": "England played 7 matches in the 2023 Women's World Cup, reaching the final where they lost to Spain.",
-    "tags": ["player", "wwc", "2023"],
+    "tags": [
+      "player",
+      "wwc",
+      "2023"
+    ],
     "expected_tool": "search_player",
+    "context_ids": null
+  },
+  {
+    "id": "training-midfielder-beginner",
+    "question": "I am a beginner midfielder who started playing 3 months ago and can train 3 times a week. Can you give me a weekly training plan?",
+    "reference_answer": "A beginner midfielder training 3x per week should focus on ball control, short passing, and positioning. A sample week: session 1 - passing drills and first touch, session 2 - small-sided games and movement off the ball, session 3 - fitness and dribbling. Keep sessions to 60-75 minutes.",
+    "tags": [
+      "training",
+      "midfielder",
+      "beginner"
+    ],
+    "expected_tool": "ask_training_agent",
+    "context_ids": null
+  },
+  {
+    "id": "training-defender-improve",
+    "question": "I play as a centre-back and want to improve my defensive positioning. What drills should I focus on?",
+    "reference_answer": "Centre-backs should focus on jockeying drills, shadow defending, and reading the game. Key drills include 1v1 defending, tracking runs practice, and set-piece organisation. Watching and analysing professional centre-backs is also valuable.",
+    "tags": [
+      "training",
+      "defender",
+      "drills"
+    ],
+    "expected_tool": "ask_training_agent",
+    "context_ids": null
+  },
+  {
+    "id": "training-striker-finishing",
+    "question": "I am an amateur striker who struggles with finishing. I train twice a week. What should I work on?",
+    "reference_answer": "Strikers struggling with finishing should dedicate one session per week to shooting practice: driven shots, side-foot finishes, and one-on-one composure drills. The second session should focus on movement to create chances. Practice under light pressure to build confidence.",
+    "tags": [
+      "training",
+      "striker",
+      "finishing"
+    ],
+    "expected_tool": "ask_training_agent",
     "context_ids": null
   }
 ]
