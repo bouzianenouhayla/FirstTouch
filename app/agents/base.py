@@ -1,12 +1,14 @@
-import logging
+import contextvars
 import os
 import time
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FutureTimeoutError
 from pathlib import Path
 
 import anthropic
+import structlog
 from dotenv import load_dotenv
 from tenacity import (
     retry,
@@ -15,11 +17,15 @@ from tenacity import (
     wait_exponential,
 )
 
+from app.resilience import CircuitBreaker, CircuitBreakerOpen
+
 load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 DEFAULT_MODEL = "claude-haiku-4-5-20251001"
 _FALLBACK_ANSWER = "I'm temporarily unavailable. Please try again in a moment."
-logger = logging.getLogger(__name__)
+_TOOL_TIMEOUT_S = 30.0
+
+logger = structlog.get_logger(__name__)
 
 
 class BaseAgent(ABC):
@@ -48,6 +54,8 @@ class BaseAgent(ABC):
                 **self._tools[-1],
                 "cache_control": {"type": "ephemeral"},
             }
+        self._breaker = CircuitBreaker(fail_max=5, reset_timeout=60.0)
+        self._log = logger.bind(agent=config_name)
 
     @abstractmethod
     def _get_tool_functions(self) -> dict[str, Callable]:
@@ -56,6 +64,49 @@ class BaseAgent(ABC):
         Returns:
             Dict mapping tool name strings to callables that accept the tool input dict.
         """
+
+    def _call_api(
+        self,
+        *,
+        messages: list[dict],
+        system: list[dict],
+    ) -> anthropic.types.Message | None:
+        """Execute a single Anthropic API call guarded by the circuit breaker.
+
+        Returns None on circuit-open or unrecoverable error so the caller can
+        short-circuit immediately. Re-raises retryable Anthropic errors so
+        tenacity can back off and retry them.
+
+        Args:
+            messages: Current message array for this turn.
+            system: System prompt blocks (with optional user context appended).
+
+        Returns:
+            Anthropic Message, or None on fast-fail.
+        """
+        kwargs: dict = {
+            "model": self.model,
+            "max_tokens": 1024,
+            "system": system,
+            "messages": messages,
+        }
+        if self._tools:
+            kwargs["tools"] = self._tools
+
+        try:
+            return self._breaker.call(self._client.messages.create, **kwargs)
+        except CircuitBreakerOpen as exc:
+            self._log.warning("circuit_open", detail=str(exc))
+            return None
+        except (
+            anthropic.RateLimitError,
+            anthropic.APIConnectionError,
+            anthropic.InternalServerError,
+        ):
+            raise
+        except Exception as exc:
+            self._log.error("api_error_unrecoverable", error=str(exc))
+            return None
 
     def run(
         self,
@@ -75,13 +126,6 @@ class BaseAgent(ABC):
         Returns:
             Tuple of (answer, tools_called, retrieval_ms, total_ms).
         """
-        messages: list[dict] = [*(history or []), {"role": "user", "content": question}]
-        retrieval_ms = 0.0
-        answer = "I could not answer that question."
-        tools_called: list[str] = []
-        t_start = time.perf_counter()
-        tool_fns = self._get_tool_functions()
-
         system: list[dict] = [
             {
                 "type": "text",
@@ -97,14 +141,12 @@ class BaseAgent(ABC):
                 }
             )
 
-        create_kwargs: dict = {
-            "model": self.model,
-            "max_tokens": 1024,
-            "system": system,
-            "messages": messages,
-        }
-        if self._tools:
-            create_kwargs["tools"] = self._tools
+        messages: list[dict] = [*(history or []), {"role": "user", "content": question}]
+        retrieval_ms = 0.0
+        answer = "I could not answer that question."
+        tools_called: list[str] = []
+        t_start = time.perf_counter()
+        tool_fns = self._get_tool_functions()
 
         @retry(
             retry=retry_if_exception_type(
@@ -116,27 +158,30 @@ class BaseAgent(ABC):
             ),
             wait=wait_exponential(multiplier=1, min=2, max=30),
             stop=stop_after_attempt(3),
-            reraise=False,
-            before_sleep=lambda state: logger.warning(
-                "Anthropic API error — retrying (attempt %d)", state.attempt_number
+            reraise=True,
+            before_sleep=lambda s: self._log.warning(
+                "api_retry", attempt=s.attempt_number
             ),
         )
-        def _call_api() -> anthropic.types.Message | None:
+        def _call() -> anthropic.types.Message | None:
+            return self._call_api(messages=messages, system=system)
+
+        # Copy the current context so tool threads inherit request_id and other
+        # contextvars bound by the request middleware.
+        ctx = contextvars.copy_context()
+
+        while True:
             try:
-                return self._client.messages.create(**create_kwargs)
+                response = _call()
             except (
                 anthropic.RateLimitError,
                 anthropic.APIConnectionError,
                 anthropic.InternalServerError,
-            ):
-                raise
-            except Exception as exc:
-                logger.error("Unrecoverable API error: %s", exc)
-                return None
+            ) as exc:
+                self._log.error("api_retries_exhausted", error=str(exc))
+                answer = _FALLBACK_ANSWER
+                break
 
-        while True:
-            create_kwargs["messages"] = messages
-            response = _call_api()
             if response is None:
                 answer = _FALLBACK_ANSWER
                 break
@@ -156,19 +201,31 @@ class BaseAgent(ABC):
                 t0 = time.perf_counter()
                 with ThreadPoolExecutor(max_workers=len(tool_blocks)) as executor:
                     futures = {
-                        block.id: executor.submit(tool_fns[block.name], block.input)
+                        block.id: executor.submit(
+                            ctx.run, tool_fns[block.name], block.input
+                        )
                         for block in tool_blocks
                     }
-                retrieval_ms += (time.perf_counter() - t0) * 1000
 
-                tool_results = [
-                    {
-                        "type": "tool_result",
-                        "tool_use_id": block_id,
-                        "content": future.result(),
-                    }
-                    for block_id, future in futures.items()
-                ]
+                tool_results: list[dict] = []
+                for block_id, future in futures.items():
+                    try:
+                        content = future.result(timeout=_TOOL_TIMEOUT_S)
+                    except FutureTimeoutError:
+                        self._log.warning("tool_timeout", tool_id=block_id)
+                        content = "Tool timed out. The service may be slow — please try again."
+                    except Exception as exc:
+                        self._log.error("tool_error", tool_id=block_id, error=str(exc))
+                        content = f"Tool execution failed: {exc}"
+                    tool_results.append(
+                        {
+                            "type": "tool_result",
+                            "tool_use_id": block_id,
+                            "content": content,
+                        }
+                    )
+
+                retrieval_ms += (time.perf_counter() - t0) * 1000
                 messages.append({"role": "assistant", "content": response.content})
                 messages.append({"role": "user", "content": tool_results})
             else:

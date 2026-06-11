@@ -67,7 +67,7 @@ async def ask(query: QueryRequest) -> QueryResponse:
         QueryResponse with answer, retrieved contexts, config name, and latency.
     """
     pipeline = PIPELINES[query.backend]
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     result = await loop.run_in_executor(
         None,
         partial(
@@ -107,7 +107,7 @@ async def save_profile(profile: UserProfile) -> dict:
     if profile.goal.strip():
         facts.append(f"main goal is to {profile.goal.strip()}")
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     await loop.run_in_executor(
         None,
         lambda: [_memory.store(f, profile.session_id) for f in facts],

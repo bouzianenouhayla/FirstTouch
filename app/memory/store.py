@@ -8,6 +8,16 @@ _COLLECTION = "user_memories"
 _DB_PATH = str(Path(__file__).resolve().parents[2] / "vectorstore" / "memories")
 _EMBED_MODEL = "all-MiniLM-L6-v2"
 
+# Module-level singleton — SentenceTransformer is ~90MB; load once per process.
+_embedder: SentenceTransformer | None = None
+
+
+def _get_embedder() -> SentenceTransformer:
+    global _embedder
+    if _embedder is None:
+        _embedder = SentenceTransformer(_EMBED_MODEL)
+    return _embedder
+
 
 class MemoryStore:
     """Semantic memory store backed by ChromaDB.
@@ -19,7 +29,6 @@ class MemoryStore:
     def __init__(self) -> None:
         self._client = chromadb.PersistentClient(path=_DB_PATH)
         self._collection = self._client.get_or_create_collection(_COLLECTION)
-        self._embedder = SentenceTransformer(_EMBED_MODEL)
 
     def store(self, fact: str, session_id: str) -> None:
         """Embed and persist a user fact.
@@ -29,7 +38,7 @@ class MemoryStore:
             session_id: Session the fact was learned in. Stored as metadata for future
                         user_id filtering once auth is added.
         """
-        embedding = self._embedder.encode(fact).tolist()
+        embedding = _get_embedder().encode(fact).tolist()
         fact_id = f"{session_id}-{hashlib.md5(fact.encode()).hexdigest()}"
         self._collection.upsert(
             documents=[fact],
@@ -50,7 +59,7 @@ class MemoryStore:
         """
         if self._collection.count() == 0:
             return []
-        embedding = self._embedder.encode(query).tolist()
+        embedding = _get_embedder().encode(query).tolist()
         results = self._collection.query(
             query_embeddings=[embedding],
             n_results=min(k, self._collection.count()),

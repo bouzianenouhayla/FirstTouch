@@ -1,15 +1,15 @@
 import json
-import logging
 import os
 from pathlib import Path
 
 import anthropic
+import structlog
 from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 DEFAULT_MODEL = "claude-haiku-4-5-20251001"
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _SYSTEM = (
     "Extract concrete facts about the user from this conversation exchange. "
@@ -57,6 +57,6 @@ class MemoryExtractor:
                 .strip()
             )
             return json.loads(text)
-        except (json.JSONDecodeError, Exception) as exc:
-            logger.debug("Memory extraction failed: %s", exc)
+        except Exception as exc:
+            logger.debug("memory_extraction_failed", error=str(exc))
             return []
