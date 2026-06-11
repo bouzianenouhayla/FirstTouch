@@ -34,6 +34,20 @@ class PipelineResult(BaseModel):
     tools_called: List[str] = []
 
 
+class UserProfile(BaseModel):
+    """Player profile submitted from the onboarding form."""
+
+    session_id: str
+    position: str = Field(..., pattern="^(goalkeeper|defender|midfielder|forward)$")
+    level: str = Field(..., pattern="^(just started|beginner|intermediate)$")
+    sessions_per_week: int = Field(..., ge=1, le=7)
+    playing_since: str = Field(
+        ...,
+        pattern="^(less than 3 months|3-6 months|6-12 months|1-2 years|2\\+ years)$",
+    )
+    goal: str = Field("", max_length=200)
+
+
 class QueryResponse(BaseModel):
     """HTTP response shape — trimmed subset of PipelineResult."""
 

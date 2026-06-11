@@ -9,12 +9,14 @@ from fastapi.templating import Jinja2Templates
 from .agent_pipeline import AgentPipeline
 from .backends.llm.anthropic_llm import AnthropicLLM
 from .backends.pipeline.base import BasePipeline
-from .models import QueryRequest, QueryResponse
+from .memory.store import MemoryStore
+from .models import QueryRequest, QueryResponse, UserProfile
 from .multi_agent_pipeline import MultiAgentPipeline
 from .rag_pipeline import RAGPipeline
 
 router = APIRouter()
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
+_memory = MemoryStore()
 
 # Both pipelines are created once at startup — no overhead per request
 _local_rag = RAGPipeline(config_name="local-phi3-chroma")
@@ -81,3 +83,33 @@ async def ask(query: QueryRequest) -> QueryResponse:
         config_name=result.config_name,
         total_time_ms=result.total_time_ms,
     )
+
+
+@router.post("/profile")
+async def save_profile(profile: UserProfile) -> dict:
+    """Store a player profile as semantic memory facts.
+
+    Converts structured profile fields into natural language facts and upserts
+    them into the vector memory store so they are retrieved on every question.
+
+    Args:
+        profile: Validated player profile from the onboarding form.
+
+    Returns:
+        Dict with status and number of facts stored.
+    """
+    facts = [
+        f"plays as a {profile.position}",
+        f"{profile.level} level player",
+        f"trains {profile.sessions_per_week} times per week",
+        f"has been playing for {profile.playing_since}",
+    ]
+    if profile.goal.strip():
+        facts.append(f"main goal is to {profile.goal.strip()}")
+
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(
+        None,
+        lambda: [_memory.store(f, profile.session_id) for f in facts],
+    )
+    return {"status": "ok", "facts_stored": len(facts)}
