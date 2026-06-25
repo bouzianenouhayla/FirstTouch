@@ -45,6 +45,7 @@ class UserProfile(BaseModel):
         ...,
         pattern="^(less than 3 months|3-6 months|6-12 months|1-2 years|2\\+ years)$",
     )
+    age: int = Field(..., ge=13, le=80)
     goal: str = Field("", max_length=200)
 
 

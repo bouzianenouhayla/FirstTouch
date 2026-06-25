@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FirstTouch</title>
+    <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+    <!-- Profile modal -->
+    <div id="profile-overlay" class="overlay hidden">
+        <div class="modal">
+            <h2>Your profile</h2>
+            <p class="modal-sub">Help FirstTouch personalise your experience.</p>
+            <form id="profile-form">
+                <label>Position
+                    <select name="position" required>
+                        <option value="">Select…</option>
+                        <option value="goalkeeper">Goalkeeper</option>
+                        <option value="defender">Defender</option>
+                        <option value="midfielder">Midfielder</option>
+                        <option value="forward">Forward</option>
+                    </select>
+                </label>
+                <label>Age
+                    <input type="number" name="age" min="13" max="80" required placeholder="e.g. 24" />
+                </label>
+                <label>Level
+                    <select name="level" required>
+                        <option value="">Select…</option>
+                        <option value="just started">Just started</option>
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                    </select>
+                </label>
+                <label>Training sessions per week
+                    <select name="sessions_per_week" required>
+                        <option value="">Select…</option>
+                        <option value="1">1×</option>
+                        <option value="2">2×</option>
+                        <option value="3">3×</option>
+                        <option value="4">4×</option>
+                        <option value="5">5+</option>
+                    </select>
+                </label>
+                <label>Playing since
+                    <select name="playing_since" required>
+                        <option value="">Select…</option>
+                        <option value="less than 3 months">Less than 3 months</option>
+                        <option value="3-6 months">3–6 months</option>
+                        <option value="6-12 months">6–12 months</option>
+                        <option value="1-2 years">1–2 years</option>
+                        <option value="2+ years">2+ years</option>
+                    </select>
+                </label>
+                <label>Main goal <span class="optional">(optional)</span>
+                    <input type="text" name="goal" placeholder="e.g. improve my first touch" maxlength="200" />
+                </label>
+                <button type="submit" class="btn-primary">Save profile</button>
+            </form>
+        </div>
+    </div>
+
+    <main class="shell">
+        <section class="hero">
+            <div class="hero-row">
+                <div>
+                    <h1>FirstTouch</h1>
+                    <p>Your football coach in your pocket. Ask about rules, players, matches — built for women who play.</p>
+                </div>
+                <div class="hero-actions">
+                    <button id="profile-btn" class="btn-secondary">My profile</button>
+                    <button id="new-chat-btn" class="btn-secondary">New chat</button>
+                </div>
+            </div>
+        </section>
+        <section class="chat-panel">
+            <div id="messages" class="messages"></div>
+            <form id="chat-form" class="chat-form">
+                <select id="backend" name="backend" class="backend-select">
+                    <option value="local">Local (Phi-3)</option>
+                    <option value="anthropic">Anthropic (Haiku)</option>
+                    <option value="agent">Agent (laws + live stats)</option>
+                    <option value="multi-agent">Multi-Agent (coordinator + specialists)</option>
+                </select>
+                <input id="question" name="question" placeholder="Ask something..." required minlength="3" />
+                <button type="submit">Ask</button>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        const form = document.getElementById('chat-form');
+        const input = document.getElementById('question');
+        const backendSelect = document.getElementById('backend');
+        const messages = document.getElementById('messages');
+        const newChatBtn = document.getElementById('new-chat-btn');
+        const profileBtn = document.getElementById('profile-btn');
+        const profileOverlay = document.getElementById('profile-overlay');
+        const profileForm = document.getElementById('profile-form');
+
+        function getSessionId() {
+            let id = localStorage.getItem('firsttouch_session_id');
+            if (!id) {
+                id = crypto.randomUUID();
+                localStorage.setItem('firsttouch_session_id', id);
+            }
+            return id;
+        }
+
+        function resetSession() {
+            localStorage.removeItem('firsttouch_session_id');
+            messages.innerHTML = '';
+            getSessionId();
+        }
+
+        function hasProfile() {
+            return localStorage.getItem('firsttouch_profile_saved') === 'true';
+        }
+
+        function openProfile() { profileOverlay.classList.remove('hidden'); }
+        function closeProfile() { profileOverlay.classList.add('hidden'); }
+
+        newChatBtn.addEventListener('click', resetSession);
+        profileBtn.addEventListener('click', openProfile);
+        profileOverlay.addEventListener('click', (e) => {
+            if (e.target === profileOverlay) closeProfile();
+        });
+
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(profileForm));
+            data.session_id = getSessionId();
+            data.sessions_per_week = parseInt(data.sessions_per_week);
+            data.age = parseInt(data.age);
+
+            try {
+                await fetch('/api/profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+                localStorage.setItem('firsttouch_profile_saved', 'true');
+                closeProfile();
+                appendMessage('assistant', "Profile saved! I'll personalise your experience based on what you've told me.");
+            } catch {
+                appendMessage('assistant error', 'Could not save profile. Try again.');
+            }
+        });
+
+        function appendMessage(role, text, meta) {
+            const bubble = document.createElement('div');
+            bubble.className = `bubble ${role}`;
+
+            const textNode = document.createElement('p');
+            textNode.textContent = text;
+            bubble.appendChild(textNode);
+
+            if (meta) {
+                const metaNode = document.createElement('span');
+                metaNode.className = 'meta';
+                metaNode.textContent = `${meta.config_name} · ${meta.total_time_ms}ms`;
+                bubble.appendChild(metaNode);
+            }
+
+            messages.appendChild(bubble);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const question = input.value.trim();
+            const backend = backendSelect.value;
+            const session_id = getSessionId();
+            if (!question) return;
+
+            appendMessage('user', question);
+            input.value = '';
+            appendMessage('assistant pending', 'Thinking...');
+
+            try {
+                const response = await fetch('/api/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question, backend, session_id })
+                });
+                const data = await response.json();
+                messages.lastChild.remove();
+                appendMessage('assistant', data.answer, {
+                    config_name: data.config_name,
+                    total_time_ms: Math.round(data.total_time_ms)
+                });
+            } catch (error) {
+                messages.lastChild.remove();
+                appendMessage('assistant error', 'Something went wrong. Check the server logs.');
+            }
+        });
+
+        getSessionId();
+        if (!hasProfile()) openProfile();
+    </script>
+</body>
+</html>

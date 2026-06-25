@@ -103,6 +103,7 @@ async def save_profile(profile: UserProfile) -> dict:
         f"{profile.level} level player",
         f"trains {profile.sessions_per_week} times per week",
         f"has been playing for {profile.playing_since}",
+        f"is {profile.age} years old",
     ]
     if profile.goal.strip():
         facts.append(f"main goal is to {profile.goal.strip()}")
